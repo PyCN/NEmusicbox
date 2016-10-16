@@ -301,8 +301,6 @@ class Menu(object):
 
             # 数字快捷键
             elif ord('0') <= key <= ord('9'):
-                if self.datatype == ('songs', 'djchannels', 'help'):
-                    continue
                 idx = key - ord('0')
                 self.ui.build_menu(self.datatype, self.title, self.datalist,
                                    self.offset, idx, self.step, self.START)
@@ -333,8 +331,7 @@ class Menu(object):
 
             # 前进
             elif key == ord('l') or key == 10:
-                if self.datatype == ('songs', 'djchannels',
-                                     'help') or len(self.datalist) <= 0:
+                if len(self.datalist) <= 0:
                     continue
                 self.START = time.time()
                 self.ui.build_loading()
@@ -473,24 +470,27 @@ class Menu(object):
                 if datatype == 'album':
                     continue
                 if datatype in ['songs', 'fmsongs']:
-                    song_id = str(datalist[idx]['song_id'])
-                    album_id = str(datalist[idx]['album_id'])
+                    song_id = datalist[idx]['song_id']
+                    album_id = datalist[idx]['album_id']
                     album_name = datalist[idx]['album_name']
                 elif self.player.playing_flag:
-                    song_id = str(self.player.playing_id)
-                    song_info = self.storage.database['songs'].get(song_id, {})
+                    song_id = self.player.playing_id
+                    song_info = self.storage.database['songs'].get(str(song_id), {})
                     album_id = song_info.get('album_id', '')
                     album_name = song_info.get('album_name', '')
                 else:
-                    album_id = ''
+                    album_id = 0
                 if album_id:
                     self.stack.append([datatype, title, datalist, offset, index])
                     songs = self.netease.album(album_id)
                     self.datatype = 'songs'
                     self.datalist = self.netease.dig_info(songs, 'songs')
                     self.title = '网易云音乐 > 专辑 > %s' % album_name
-                    self.offset = 0
-                    self.index = 0
+                    for i in range(len(self.datalist)):
+                        if self.datalist[i]['song_id'] == song_id:
+                            self.offset = i - i%step
+                            self.index = i
+                            break
 
             # 添加到打碟歌单
             elif key == ord('a'):
@@ -526,8 +526,8 @@ class Menu(object):
 
             # 从当前列表移除
             elif key == ord('r'):
-                if (datatype == 'songs' or
-                        datatype == 'djchannels') and len(datalist) != 0:
+                if (datatype in ('songs', 'djchannels', 'fmsongs') and
+                        len(datalist) != 0):
                     self.datalist.pop(idx)
                     self.index = carousel(offset, min(
                         len(datalist), offset + step) - 1, idx)
