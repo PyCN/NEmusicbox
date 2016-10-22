@@ -4,6 +4,8 @@ NetEase-MusicBox
 
 #### [感谢](https://github.com/darknessomi/musicbox/graphs/contributors)为 MusicBox 的开发付出过努力的每一个人！
 
+调试方法为：在music目录下，python -m NEMbox.__init__
+
 高品质网易云音乐命令行版本，简洁优雅，丝般顺滑，基于Python编写。
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE.txt)
